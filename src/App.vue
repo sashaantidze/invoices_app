@@ -2,7 +2,7 @@
   <div v-if="!mobile" class="app flex flex-column" >
     <navigation />
     <div class="app-content flex flex-column">
-      
+      <InvoiceModal v-if="InvoiceModal" />
       <router-view />
     </div>
   </div>
@@ -12,16 +12,17 @@
     <p>App can be run on a computer or a tablet</p>
   </div>
       
-      
-  <router-view />
 </template>
 
 
 <script>
+  import {mapState} from 'vuex'
   import Navigation from "./components/Navigation"
+  import InvoiceModal from "./components/InvoiceModal"
   export default {
     components: {
-      Navigation
+      Navigation,
+      InvoiceModal,
     },
 
     created() {
@@ -49,6 +50,10 @@
         this.mobile = false;
 
       }
+    },
+
+    computed: {
+      ...mapState(['InvoiceModal'])
     }
   }
 </script>
@@ -60,7 +65,6 @@
   padding: 0;
   box-sizing: border-box;
   font-family: "Poppins", sans-serif;
-  background-color: #141625;
 }
 
 
