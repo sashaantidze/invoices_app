@@ -99,7 +99,7 @@
 							<td class="qty"><input type="text" v-model="item.qty" /></td>
 							<td class="price"><input type="text" v-model="item.price" /></td>
 							<td class="total flex">${{ (item.total = item.qty * item.price) }}</td>
-							<img @click="deleteInvoiceItem(item.id)" src="@/assets/icon-delete.svg" alt="" />
+							<img class="item-delete-btn" @click="deleteInvoiceItem(item.id)" src="@/assets/icon-delete.svg" alt="" />
 						</tr>
 					</table>
 
@@ -130,32 +130,34 @@
 
 <script>
 
+import {uid} from 'uid'
 import {mapMutations} from 'vuex'
 export default {
 	name: "InvoiceModal",
 
 	data () {
 		return {
-		billerStreetAddress: null,
-		billerCity: null,
-		billerZipCode: null,
-		billerCountry: null,
-		clientName: null,
-		clientEmail: null,
-		clientStreetAddress: null,
-		clientCity: null,
-		clientZipCode: null,
-		clientCountry: null,
-		invoiceDateUnix: null,
-		invoiceDate: null,
-		paymentTerms: null,
-		paymentDueDateUnix: null,
-		paymentDueDate: null,
-		productDescription: null,
-		invoicePending: null,
-		invoiceDraft: null,
-		invoiceItemList: [],
-		invoiceTotal: 0,
+			dateOptions: { year: 'numeric', month: 'short', day: 'numeric' },
+			billerStreetAddress: null,
+			billerCity: null,
+			billerZipCode: null,
+			billerCountry: null,
+			clientName: null,
+			clientEmail: null,
+			clientStreetAddress: null,
+			clientCity: null,
+			clientZipCode: null,
+			clientCountry: null,
+			invoiceDateUnix: null,
+			invoiceDate: null,
+			paymentTerms: null,
+			paymentDueDateUnix: null,
+			paymentDueDate: null,
+			productDescription: null,
+			invoicePending: null,
+			invoiceDraft: null,
+			invoiceItemList: [],
+			invoiceTotal: 0,
 		}
 	},
 
@@ -168,7 +170,44 @@ export default {
 
 		closeInvoice() {
 			this.toggleInvoice()
+		},
+
+
+		addNewInvoiceItem() {
+			this.invoiceItemList.push({
+				id: uid(),
+				itemName: "",
+				qty: "",
+				price: 0,
+				total: 0,
+			})
+
+			console.log(this.invoiceItemList)
+		},
+
+
+		deleteInvoiceItem (id) {
+			this.invoiceItemList = this.invoiceItemList.filter((item) => item.id != id );
 		}
+
+	},
+
+
+	watch: {
+		paymentTerms() {
+			const futureDate = new Date();
+			this.paymentDueDateUnix = futureDate.setDate(futureDate.getDate() + parseInt(this.paymentTerms))
+			this.paymentDueDate = new Date(this.paymentDueDateUnix).toLocaleDateString('en-us', this.dateOptions)
+		}
+	},
+
+
+	created() {
+
+		this.invoiceDateUnix = Date.now();
+		this.invoiceDate = new Date(this.invoiceDateUnix).toLocaleDateString('en-us', this.dateOptions)
+
+
 	}
 }
 
@@ -249,6 +288,9 @@ export default {
             .total {
               flex-basis: 20%;
               align-self: center;
+            }
+            .item-delete-btn{
+            	cursor: pointer;
             }
           }
           .table-heading {
