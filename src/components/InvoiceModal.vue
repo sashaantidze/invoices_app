@@ -92,7 +92,7 @@
 							<th class="item-name">Item Name</th>
 							<th class="qty">Qty</th>
 							<th class="price">Price</th>
-							<th class="total">Toal</th>
+							<th class="total">Total</th>
 						</tr>
 						<tr class="table-items flex" v-for="(item, index) in invoiceItemList" :key="index">
 							<td class="item-name"><input type="text" v-model="item.itemName" /></td>
@@ -118,7 +118,7 @@
 				<div class="right flex">
 					<button v-if="!editInvoice" type="submit" @click="saveDraft" class="dark-purple">Save Draft</button>
 					<button v-if="!editInvoice" type="submit" @click="publishInvoice" class="purple">Create Invoice</button>
-					<button v-if="editInvoice" type="sumbit" class="purple">Update Invoice</button>
+					<button v-if="editInvoice" type="button" class="purple">Update Invoice</button>
 				</div>
 			</div>
 
@@ -132,6 +132,7 @@
 
 import {uid} from 'uid'
 import {mapMutations} from 'vuex'
+import axios from 'axios'
 export default {
 	name: "InvoiceModal",
 
@@ -181,14 +182,69 @@ export default {
 				price: 0,
 				total: 0,
 			})
-
-			console.log(this.invoiceItemList)
 		},
-
 
 		deleteInvoiceItem (id) {
 			this.invoiceItemList = this.invoiceItemList.filter((item) => item.id != id );
-		}
+		},
+
+		publishInvoice () {
+			this.invoicePending = true;
+		},
+
+		saveDraft () {
+			this.invoiceDraft = true;
+		},
+
+
+		calcInvoiceTotal() {
+			this.invoiceTotal = 0;
+			this.invoiceItemList.forEach(item => {
+				this.invoiceTotal += item.total;
+			})
+		},
+
+		async uploadInvoice() {
+			// if(this.invoiceItemList.length <= 0){
+			// 	alert('Please make sure you add work items');
+			// 	return;
+			// }
+
+			this.calcInvoiceTotal()
+
+			let invoiceData = {
+				invoiceId: uid(6),
+        billerStreetAddress: this.billerStreetAddress,
+        billerCity: this.billerCity,
+        billerZipCode: this.billerZipCode,
+        billerCountry: this.billerCountry,
+        clientName: this.clientName,
+        clientEmail: this.clientEmail,
+        clientStreetAddress: this.clientStreetAddress,
+        clientCity: this.clientCity,
+        clientZipCode: this.clientZipCode,
+        clientCountry: this.clientCountry,
+        invoiceDate: this.invoiceDate,
+        invoiceDateUnix: this.invoiceDateUnix,
+        paymentTerms: this.paymentTerms,
+        paymentDueDate: this.paymentDueDate,
+        paymentDueDateUnix: this.paymentDueDateUnix,
+        productDescription: this.productDescription,
+        invoiceItemList: this.invoiceItemList,
+        invoiceTotal: this.invoiceTotal,
+        invoicePending: this.invoicePending,
+        invoiceDraft: this.invoiceDraft,
+        invoicePaid: null,
+			}
+
+			await axios.post('/api/v1/invoice', invoiceData)
+			
+		},
+
+		submitForm () {
+			this.uploadInvoice();
+		},
+
 
 	},
 
@@ -207,8 +263,9 @@ export default {
 		this.invoiceDateUnix = Date.now();
 		this.invoiceDate = new Date(this.invoiceDateUnix).toLocaleDateString('en-us', this.dateOptions)
 
+	},
 
-	}
+
 }
 
 </script>
