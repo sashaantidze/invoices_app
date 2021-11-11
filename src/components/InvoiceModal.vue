@@ -237,7 +237,7 @@ export default {
         invoicePaid: null,
 			}
 
-			await axios.post('/api/v1/invoice', invoiceData)
+			await axios.post('/api/v1/invoice', {invoice: invoiceData})
 			
 		},
 
