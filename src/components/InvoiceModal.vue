@@ -2,29 +2,32 @@
 	
 	<div @click="checkClick" ref="invoiceWrap" class="invoice-wrap flex flex-column">
 		<form @submit.prevent="submitForm" class="invoice-content">
+
+			<Loading v-show="loading" />
+
 			<h1>New Invoice</h1>
 
 			<div class="bill-from flex flex-column">
 				<h4>Bill From</h4>
 				<div class="input flex flex-column">
 					<label for="billerStreetAddress">Street Address</label>
-					<input type="text" id="billerStreetAddress" v-model="billerStreetAddress">
+					<input required type="text" id="billerStreetAddress" v-model="billerStreetAddress">
 				</div>
 
 				<div class="location-details flex">
 					<div class="input flex flex-column">
 						<label for="billerCity">City</label>
-						<input type="text" id="billerCity" v-model="billerCity">
+						<input required type="text" id="billerCity" v-model="billerCity">
 					</div>
 
 					<div class="input flex flex-column">
 						<label for="billerZipCode">Zip Code</label>
-						<input type="text" id="billerZipCode" v-model="billerZipCode">
+						<input required type="text" id="billerZipCode" v-model="billerZipCode">
 					</div>
 
 					<div class="input flex flex-column">
 						<label for="billerCountry">Country</label>
-						<input type="text" id="billerCountry" v-model="billerCountry">
+						<input required type="text" id="billerCountry" v-model="billerCountry">
 					</div>
 				</div>
 			</div>
@@ -133,12 +136,21 @@
 import {uid} from 'uid'
 import {mapMutations} from 'vuex'
 import axios from 'axios'
+import Loading from '@/components/Loading' 
+
 export default {
 	name: "InvoiceModal",
+
+	components: {
+		Loading
+	},
 
 	data () {
 		return {
 			dateOptions: { year: 'numeric', month: 'short', day: 'numeric' },
+			errors: {},
+			loading: false,
+
 			billerStreetAddress: null,
 			billerCity: null,
 			billerZipCode: null,
@@ -160,7 +172,7 @@ export default {
 			invoiceItemList: [],
 			invoiceTotal: 0,
 
-			errors: {}
+			
 		}
 	},
 
@@ -168,8 +180,20 @@ export default {
 	methods: {
 
 		...mapMutations({
-			toggleInvoice: 'TOGGLE_INVOICE'
+			toggleInvoice: 'TOGGLE_INVOICE',
+			toggleModal: 'TOGGLE_MODAL',
 		}),
+
+
+		checkClick(e) {
+			if(e.target === this.$refs.invoiceWrap){
+				this.toggleModal();
+				// console.log(this.$data)
+				console.log(this.invoiceItemList.length)
+			}
+		},
+
+
 
 		closeInvoice() {
 			this.toggleInvoice()
@@ -207,10 +231,12 @@ export default {
 		},
 
 		async uploadInvoice() {
-			// if(this.invoiceItemList.length <= 0){
-			// 	alert('Please make sure you add work items');
-			// 	return;
-			// }
+			if(this.invoiceItemList.length <= 0){
+				alert('Please make sure you add work items');
+				return;
+			}
+
+			this.loading = true;
 
 			this.calcInvoiceTotal()
 
@@ -244,6 +270,7 @@ export default {
 	        invoiceDraft: this.invoiceDraft,
 	        invoicePaid: null,
 				})
+				this.loading = false;
 				this.toggleInvoice()
 			}
 			catch (e) {
@@ -251,7 +278,6 @@ export default {
 					this.errors = e.response.data.errors
 				}
 
-				console.log(this.errors.billerStreetAddress[0])
 			}
 			
 		},
