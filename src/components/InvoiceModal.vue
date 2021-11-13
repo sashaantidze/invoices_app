@@ -8,23 +8,23 @@
 				<h4>Bill From</h4>
 				<div class="input flex flex-column">
 					<label for="billerStreetAddress">Street Address</label>
-					<input required type="text" id="billerStreetAddress" v-model="billerStreetAddress">
+					<input type="text" id="billerStreetAddress" v-model="billerStreetAddress">
 				</div>
 
 				<div class="location-details flex">
 					<div class="input flex flex-column">
 						<label for="billerCity">City</label>
-						<input required type="text" id="billerCity" v-model="billerCity">
+						<input type="text" id="billerCity" v-model="billerCity">
 					</div>
 
 					<div class="input flex flex-column">
 						<label for="billerZipCode">Zip Code</label>
-						<input required type="text" id="billerZipCode" v-model="billerZipCode">
+						<input type="text" id="billerZipCode" v-model="billerZipCode">
 					</div>
 
 					<div class="input flex flex-column">
 						<label for="billerCountry">Country</label>
-						<input required type="text" id="billerCountry" v-model="billerCountry">
+						<input type="text" id="billerCountry" v-model="billerCountry">
 					</div>
 				</div>
 			</div>
@@ -96,8 +96,8 @@
 						</tr>
 						<tr class="table-items flex" v-for="(item, index) in invoiceItemList" :key="index">
 							<td class="item-name"><input type="text" v-model="item.itemName" /></td>
-							<td class="qty"><input type="text" v-model="item.qty" /></td>
-							<td class="price"><input type="text" v-model="item.price" /></td>
+							<td class="qty"><input type="number" v-model="item.qty" /></td>
+							<td class="price"><input type="number" v-model="item.price" /></td>
 							<td class="total flex">${{ (item.total = item.qty * item.price) }}</td>
 							<img class="item-delete-btn" @click="deleteInvoiceItem(item.id)" src="@/assets/icon-delete.svg" alt="" />
 						</tr>
@@ -159,6 +159,8 @@ export default {
 			invoiceDraft: null,
 			invoiceItemList: [],
 			invoiceTotal: 0,
+
+			errors: {}
 		}
 	},
 
@@ -213,31 +215,44 @@ export default {
 			this.calcInvoiceTotal()
 
 			let invoiceData = {
-				invoiceId: uid(6),
-        billerStreetAddress: this.billerStreetAddress,
-        billerCity: this.billerCity,
-        billerZipCode: this.billerZipCode,
-        billerCountry: this.billerCountry,
-        clientName: this.clientName,
-        clientEmail: this.clientEmail,
-        clientStreetAddress: this.clientStreetAddress,
-        clientCity: this.clientCity,
-        clientZipCode: this.clientZipCode,
-        clientCountry: this.clientCountry,
-        invoiceDate: this.invoiceDate,
-        invoiceDateUnix: this.invoiceDateUnix,
-        paymentTerms: this.paymentTerms,
-        paymentDueDate: this.paymentDueDate,
-        paymentDueDateUnix: this.paymentDueDateUnix,
-        productDescription: this.productDescription,
-        invoiceItemList: this.invoiceItemList,
-        invoiceTotal: this.invoiceTotal,
-        invoicePending: this.invoicePending,
-        invoiceDraft: this.invoiceDraft,
-        invoicePaid: null,
+				
 			}
 
-			await axios.post('/api/v1/invoice', {invoice: invoiceData})
+
+			try{
+				await axios.post('/api/v1/invoice', {
+					invoiceId: uid(6),
+	        billerStreetAddress: this.billerStreetAddress,
+	        billerCity: this.billerCity,
+	        billerZipCode: this.billerZipCode,
+	        billerCountry: this.billerCountry,
+	        clientName: this.clientName,
+	        clientEmail: this.clientEmail,
+	        clientStreetAddress: this.clientStreetAddress,
+	        clientCity: this.clientCity,
+	        clientZipCode: this.clientZipCode,
+	        clientCountry: this.clientCountry,
+	        invoiceDate: this.invoiceDate,
+	        invoiceDateUnix: this.invoiceDateUnix,
+	        paymentTerms: this.paymentTerms,
+	        paymentDueDate: this.paymentDueDate,
+	        paymentDueDateUnix: this.paymentDueDateUnix,
+	        productDescription: this.productDescription,
+	        invoiceItemList: this.invoiceItemList,
+	        invoiceTotal: this.invoiceTotal,
+	        invoicePending: this.invoicePending,
+	        invoiceDraft: this.invoiceDraft,
+	        invoicePaid: null,
+				})
+				this.toggleInvoice()
+			}
+			catch (e) {
+				if(e.response.status === 422){
+					this.errors = e.response.data.errors
+				}
+
+				console.log(this.errors.billerStreetAddress[0])
+			}
 			
 		},
 
