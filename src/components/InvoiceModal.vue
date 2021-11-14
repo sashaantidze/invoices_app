@@ -11,23 +11,23 @@
 				<h4>Bill From</h4>
 				<div class="input flex flex-column">
 					<label for="billerStreetAddress">Street Address</label>
-					<input required type="text" id="billerStreetAddress" v-model="billerStreetAddress">
+					<input required type="text" id="billerStreetAddress" v-model="invoiceData.billerStreetAddress">
 				</div>
 
 				<div class="location-details flex">
 					<div class="input flex flex-column">
 						<label for="billerCity">City</label>
-						<input required type="text" id="billerCity" v-model="billerCity">
+						<input required type="text" id="billerCity" v-model="invoiceData.billerCity">
 					</div>
 
 					<div class="input flex flex-column">
 						<label for="billerZipCode">Zip Code</label>
-						<input required type="text" id="billerZipCode" v-model="billerZipCode">
+						<input required type="text" id="billerZipCode" v-model="invoiceData.billerZipCode">
 					</div>
 
 					<div class="input flex flex-column">
 						<label for="billerCountry">Country</label>
-						<input required type="text" id="billerCountry" v-model="billerCountry">
+						<input required type="text" id="billerCountry" v-model="invoiceData.billerCountry">
 					</div>
 				</div>
 			</div>
@@ -37,28 +37,28 @@
 				<h4>Bill To</h4>
 				<div class="input flex flex-column">
 					<label for="clientName">Client's Name</label>
-					<input required type="text" id="clientName" v-model="clientName" />
+					<input required type="text" id="clientName" v-model="invoiceData.clientName" />
 				</div>
 				<div class="input flex flex-column">
 					<label for="clientEmail">Client's Email</label>
-					<input required type="text" id="clientEmail" v-model="clientEmail" />
+					<input required type="text" id="clientEmail" v-model="invoiceData.clientEmail" />
 				</div>
 				<div class="input flex flex-column">
 					<label for="clientStreetAddress">Street Address</label>
-					<input required type="text" id="clientStreetAddress" v-model="clientStreetAddress" />
+					<input required type="text" id="clientStreetAddress" v-model="invoiceData.clientStreetAddress" />
 				</div>
 				<div class="location-details flex">
 					<div class="input flex flex-column">
 						<label for="clientCity">City</label>
-						<input required type="text" id="clientCity" v-model="clientCity" />
+						<input required type="text" id="clientCity" v-model="invoiceData.clientCity" />
 					</div>
 					<div class="input flex flex-column">
 						<label for="clientZipCode">Zip Code</label>
-						<input required type="text" id="clientZipCode" v-model="clientZipCode" />
+						<input required type="text" id="clientZipCode" v-model="invoiceData.clientZipCode" />
 					</div>
 					<div class="input flex flex-column">
 						<label for="clientCountry">Country</label>
-						<input required type="text" id="clientCountry" v-model="clientCountry" />
+						<input required type="text" id="clientCountry" v-model="invoiceData.clientCountry" />
 					</div>
 				</div>
 			</div>
@@ -74,7 +74,7 @@
 					</div>
 					<div class="input flex flex-column">
 						<label for="paymentDueDate">Payment Due</label>
-						<input disabled type="text" id="paymentDueDate" v-model="paymentDueDate" />
+						<input disabled type="text" id="paymentDueDate" v-model="invoiceData.paymentDueDate" />
 					</div>
 				</div>
 				<div class="input flex flex-column">
@@ -86,7 +86,7 @@
 				</div>
 				<div class="input flex flex-column">
 					<label for="productDescription">Product Description</label>
-					<input required type="text" id="productDescription" v-model="productDescription" />
+					<input required type="text" id="productDescription" v-model="invoiceData.productDescription" />
 				</div>
 				<div class="work-items">
 					<h3>Item List</h3>
@@ -97,7 +97,7 @@
 							<th class="price">Price</th>
 							<th class="total">Total</th>
 						</tr>
-						<tr class="table-items flex" v-for="(item, index) in invoiceItemList" :key="index">
+						<tr class="table-items flex" v-for="(item, index) in invoiceData.invoiceItemList" :key="index">
 							<td class="item-name"><input type="text" v-model="item.itemName" /></td>
 							<td class="qty"><input type="number" v-model="item.qty" /></td>
 							<td class="price"><input type="number" v-model="item.price" /></td>
@@ -150,28 +150,29 @@ export default {
 			dateOptions: { year: 'numeric', month: 'short', day: 'numeric' },
 			errors: {},
 			loading: false,
-
-			billerStreetAddress: null,
-			billerCity: null,
-			billerZipCode: null,
-			billerCountry: null,
-			clientName: null,
-			clientEmail: null,
-			clientStreetAddress: null,
-			clientCity: null,
-			clientZipCode: null,
-			clientCountry: null,
-			invoiceDateUnix: null,
-			invoiceDate: null,
 			paymentTerms: null,
-			paymentDueDateUnix: null,
-			paymentDueDate: null,
-			productDescription: null,
+			invoiceDate: null,
 			invoicePending: null,
 			invoiceDraft: null,
-			invoiceItemList: [],
 			invoiceTotal: 0,
 
+			invoiceData: {
+				billerStreetAddress: null,
+				billerCity: null,
+				billerZipCode: null,
+				billerCountry: null,
+				clientName: null,
+				clientEmail: null,
+				clientStreetAddress: null,
+				clientCity: null,
+				clientZipCode: null,
+				clientCountry: null,
+				invoiceDateUnix: null,
+				paymentDueDateUnix: null,
+				paymentDueDate: null,
+				productDescription: null,
+				invoiceItemList: [],
+			}
 			
 		}
 	},
@@ -187,12 +188,11 @@ export default {
 
 		checkClick(e) {
 			if(e.target === this.$refs.invoiceWrap){
+				this.canBeClosed();
 				this.toggleModal();
-				// console.log(this.$data)
-				console.log(this.invoiceItemList.length)
+				
 			}
 		},
-
 
 
 		closeInvoice() {
@@ -200,8 +200,17 @@ export default {
 		},
 
 
+		canBeClosed(){
+			for (let prop in this.invoiceData) {
+				let object = this.invoiceData[prop];
+				console.log(object + ' ==== ' + typeof object);
+			}
+			debugger;
+		},
+
+
 		addNewInvoiceItem() {
-			this.invoiceItemList.push({
+			this.invoiceData.invoiceItemList.push({
 				id: uid(),
 				itemName: "",
 				qty: "",
@@ -211,7 +220,7 @@ export default {
 		},
 
 		deleteInvoiceItem (id) {
-			this.invoiceItemList = this.invoiceItemList.filter((item) => item.id != id );
+			this.invoiceData.invoiceItemList = this.invoiceData.invoiceItemList.filter((item) => item.id != id );
 		},
 
 		publishInvoice () {
@@ -225,49 +234,46 @@ export default {
 
 		calcInvoiceTotal() {
 			this.invoiceTotal = 0;
-			this.invoiceItemList.forEach(item => {
+			this.invoiceData.invoiceItemList.forEach(item => {
 				this.invoiceTotal += item.total;
 			})
 		},
 
 		async uploadInvoice() {
-			if(this.invoiceItemList.length <= 0){
+			if(this.invoiceData.invoiceItemList.length <= 0){
 				alert('Please make sure you add work items');
 				return;
 			}
+
+			this.canBeClosed();
 
 			this.loading = true;
 
 			this.calcInvoiceTotal()
 
-			let invoiceData = {
-				
-			}
-
-
 			try{
 				await axios.post('/api/v1/invoice', {
 					invoiceId: uid(6),
-	        billerStreetAddress: this.billerStreetAddress,
-	        billerCity: this.billerCity,
-	        billerZipCode: this.billerZipCode,
-	        billerCountry: this.billerCountry,
-	        clientName: this.clientName,
-	        clientEmail: this.clientEmail,
-	        clientStreetAddress: this.clientStreetAddress,
-	        clientCity: this.clientCity,
-	        clientZipCode: this.clientZipCode,
-	        clientCountry: this.clientCountry,
+	        billerStreetAddress: this.invoiceData.billerStreetAddress,
+	        billerCity: this.invoiceData.billerCity,
+	        billerZipCode: this.invoiceData.billerZipCode,
+	        billerCountry: this.invoiceData.billerCountry,
+	        clientName: this.invoiceData.clientName,
+	        clientEmail: this.invoiceData.clientEmail,
+	        clientStreetAddress: this.invoiceData.clientStreetAddress,
+	        clientCity: this.invoiceData.clientCity,
+	        clientZipCode: this.invoiceData.clientZipCode,
+	        clientCountry: this.invoiceData.clientCountry,
 	        invoiceDate: this.invoiceDate,
-	        invoiceDateUnix: this.invoiceDateUnix,
-	        paymentTerms: this.paymentTerms,
-	        paymentDueDate: this.paymentDueDate,
-	        paymentDueDateUnix: this.paymentDueDateUnix,
-	        productDescription: this.productDescription,
-	        invoiceItemList: this.invoiceItemList,
-	        invoiceTotal: this.invoiceTotal,
-	        invoicePending: this.invoicePending,
-	        invoiceDraft: this.invoiceDraft,
+	        invoiceDateUnix: this.invoiceData.invoiceDateUnix,
+	        paymentTerms: this.invoiceData.paymentTerms,
+	        paymentDueDate: this.invoiceData.paymentDueDate,
+	        paymentDueDateUnix: this.invoiceData.paymentDueDateUnix,
+	        productDescription: this.invoiceData.productDescription,
+	        invoiceItemList: this.invoiceData.invoiceItemList,
+	        invoiceTotal: this.invoiceData.invoiceTotal,
+	        invoicePending: this.invoiceData.invoicePending,
+	        invoiceDraft: this.invoiceData.invoiceDraft,
 	        invoicePaid: null,
 				})
 				this.loading = false;
@@ -291,18 +297,25 @@ export default {
 
 
 	watch: {
-		paymentTerms() {
-			const futureDate = new Date();
-			this.paymentDueDateUnix = futureDate.setDate(futureDate.getDate() + parseInt(this.paymentTerms))
-			this.paymentDueDate = new Date(this.paymentDueDateUnix).toLocaleDateString('en-us', this.dateOptions)
+		paymentTerms: {
+			// immediate: true,
+			// deep: true,
+			handler(){
+				const futureDate = new Date();
+				this.invoiceData.paymentDueDateUnix = futureDate.setDate(futureDate.getDate() + parseInt(this.paymentTerms))
+				this.invoiceData.paymentDueDate = new Date(this.invoiceData.paymentDueDateUnix).toLocaleDateString('en-us', this.dateOptions)
+			},
+			
+			
 		}
+		
 	},
 
 
 	created() {
 
-		this.invoiceDateUnix = Date.now();
-		this.invoiceDate = new Date(this.invoiceDateUnix).toLocaleDateString('en-us', this.dateOptions)
+		this.invoiceData.invoiceDateUnix = Date.now();
+		this.invoiceDate = new Date(this.invoiceData.invoiceDateUnix).toLocaleDateString('en-us', this.dateOptions)
 
 	},
 
