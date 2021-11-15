@@ -155,7 +155,9 @@ export default {
 			invoicePending: null,
 			invoiceDraft: null,
 			invoiceTotal: 0,
+			invoiceDateUnix: null,
 
+			// Fillable invoice data. (invoiceDateUnix to be excluded as inserted on created hook) 
 			invoiceData: {
 				billerStreetAddress: null,
 				billerCity: null,
@@ -167,7 +169,6 @@ export default {
 				clientCity: null,
 				clientZipCode: null,
 				clientCountry: null,
-				invoiceDateUnix: null,
 				paymentDueDateUnix: null,
 				paymentDueDate: null,
 				productDescription: null,
@@ -188,24 +189,42 @@ export default {
 
 		checkClick(e) {
 			if(e.target === this.$refs.invoiceWrap){
-				this.canBeClosed();
-				this.toggleModal();
+				if(!this.canBeClosed()){
+					this.toggleModal();
+					return;
+				}
+				
+				this.toggleInvoice();
 				
 			}
 		},
 
 
 		closeInvoice() {
-			this.toggleInvoice()
+			if(!this.canBeClosed()){
+					this.toggleModal();
+					return;
+				}
+				
+				this.toggleInvoice();
 		},
 
 
 		canBeClosed(){
 			for (let prop in this.invoiceData) {
 				let object = this.invoiceData[prop];
-				console.log(object + ' ==== ' + typeof object);
+					if(prop === 'invoiceItemList'){
+						return (object.length ? false : true);
+					}
+					else{
+						if(object != null){
+							return false;
+						}
+					}
 			}
-			debugger;
+
+			return true;
+
 		},
 
 
@@ -245,8 +264,6 @@ export default {
 				return;
 			}
 
-			this.canBeClosed();
-
 			this.loading = true;
 
 			this.calcInvoiceTotal()
@@ -265,7 +282,7 @@ export default {
 	        clientZipCode: this.invoiceData.clientZipCode,
 	        clientCountry: this.invoiceData.clientCountry,
 	        invoiceDate: this.invoiceDate,
-	        invoiceDateUnix: this.invoiceData.invoiceDateUnix,
+	        invoiceDateUnix: this.invoiceDateUnix,
 	        paymentTerms: this.invoiceData.paymentTerms,
 	        paymentDueDate: this.invoiceData.paymentDueDate,
 	        paymentDueDateUnix: this.invoiceData.paymentDueDateUnix,
@@ -281,6 +298,7 @@ export default {
 			}
 			catch (e) {
 				if(e.response.status === 422){
+					this.loading = false;
 					this.errors = e.response.data.errors
 				}
 
@@ -292,20 +310,16 @@ export default {
 			this.uploadInvoice();
 		},
 
-
 	},
 
 
 	watch: {
 		paymentTerms: {
-			// immediate: true,
-			// deep: true,
 			handler(){
 				const futureDate = new Date();
 				this.invoiceData.paymentDueDateUnix = futureDate.setDate(futureDate.getDate() + parseInt(this.paymentTerms))
 				this.invoiceData.paymentDueDate = new Date(this.invoiceData.paymentDueDateUnix).toLocaleDateString('en-us', this.dateOptions)
 			},
-			
 			
 		}
 		
@@ -314,8 +328,8 @@ export default {
 
 	created() {
 
-		this.invoiceData.invoiceDateUnix = Date.now();
-		this.invoiceDate = new Date(this.invoiceData.invoiceDateUnix).toLocaleDateString('en-us', this.dateOptions)
+		this.invoiceDateUnix = Date.now();
+		this.invoiceDate = new Date(this.invoiceDateUnix).toLocaleDateString('en-us', this.dateOptions)
 
 	},
 

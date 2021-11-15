@@ -1,40 +1,68 @@
 <template>
-  <div v-if="!mobile" class="app flex flex-column" >
-    <navigation />
-    <div class="app-content flex flex-column">
-      <Modal v-if="ModalActive" />
-      <transition name="invoice">
-        <InvoiceModal v-if="InvoiceModal" />  
-      </transition>
-      
-      <router-view />
-    </div>
-  </div>
+  <div v-if="InvoicesLoaded">
+    
+    <div v-if="!mobile" class="app flex flex-column" >
+      <navigation />
+      <div class="app-content flex flex-column">
+        <Modal v-if="ModalActive" />
+        <transition name="invoice">
+          <InvoiceModal v-if="InvoiceModal" />  
+        </transition>
 
-  <div v-else class="mobile-message flex flex-column">
-    <h2>Sorry, this app is not supported on mobile devices</h2>
-    <p>App can be run on a computer or a tablet</p>
+        
+
+        <router-view />
+
+        <!-- <div style="color: #fff; font-size: 30px;">
+          <div v-for="invoice in InvoiceData">
+            {{invoice}}
+          </div>
+        </div> -->
+
+
+      </div>
+    </div>
+
+    <div v-else class="mobile-message flex flex-column">
+      <h2>Sorry, this app is not supported on mobile devices</h2>
+      <p>App can be run on a computer or a tablet</p>
+    </div>
+
+  </div>
+  <div v-else>
+    <Loading />
   </div>
       
 </template>
 
 
 <script>
-  import {mapState} from 'vuex'
+  import {mapState, mapActions, mapGetters} from 'vuex'
   import Navigation from "./components/Navigation"
   import InvoiceModal from "./components/InvoiceModal"
   import Modal from "./components/Modal"
+  import Loading from '@/components/Loading'
+
   export default {
     components: {
       Navigation,
       InvoiceModal,
       Modal,
+      Loading,
     },
 
+
+
+
     created() {
+      this.retrieveInvoices();
+
       this.checkScreen();
       window.addEventListener('resize', this.checkScreen);
+
     },
+
+
 
 
     data() {
@@ -44,7 +72,14 @@
     },
 
 
+
+
     methods: {
+
+      ...mapActions({
+        retrieveInvoices: 'GET_INVOICES'
+      }),
+
       checkScreen() {
         const windowWidth = window.innerWidth;
 
@@ -54,12 +89,21 @@
         }
 
         this.mobile = false;
-
       }
     },
 
+
+
+
     computed: {
-      ...mapState(['InvoiceModal', 'ModalActive'])
+
+      ...mapGetters({
+        InvoiceModal: 'getInvoiceModal',
+        ModalActive: 'getModalActive',
+        InvoicesLoaded: 'getInvoicesLoaded',
+        InvoiceData: 'getInvoiceData',
+      })
+
     }
   }
 </script>
