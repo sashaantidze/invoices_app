@@ -27,13 +27,30 @@
 			</div>
 		</div>
 
+		<!-- INVOICES -->
+
+		<div v-if="InvoiceData.length">
+			<Invoice v-for="(invoice, index) in InvoiceData" :invoice="invoice" :key="index" />
+		</div>
+		<div v-else class="empty flex flex-column">
+			<img src="@/assets/illustration-empty.svg" alt="">
+			<h3>There is nothing here</h3>
+			<p>Get started by clicking New Invoice button and your invoices will appear on this page.</p>
+		</div>
+
+
 	</div>
 </template>
 
 <script>
-import {mapMutations} from 'vuex'
+import {mapMutations, mapGetters} from 'vuex'
+import Invoice from '../components/Invoice'
 export default {
 	name: 'home',
+
+	components: {
+		Invoice
+	},
 
 	data() {
 		return {
@@ -55,6 +72,13 @@ export default {
 		toggleFilterMenu() {
 			this.filterMenu = !this.filterMenu;
 		}
+	},
+
+
+	computed: {
+		...mapGetters({
+			InvoiceData: 'getInvoiceData',
+		}),
 	}
 
 }
@@ -156,6 +180,30 @@ export default {
         		}
 			}
 
+		}
+	}
+
+
+	.empty{
+		margin-top: 160px;
+		align-items: center;
+
+		img{
+			width: 214px;
+			heigh: 200px;
+		}
+
+		h3{
+			font-size: 20px;
+			margin-top: 40px;
+		}
+
+		p{
+			text-align: center;
+			max-width: 224px;
+			font-size: 300;
+			margin-top: 16px;
+			font-size: 12px;
 		}
 	}
 }

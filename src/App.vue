@@ -13,11 +13,7 @@
 
         <router-view />
 
-        <!-- <div style="color: #fff; font-size: 30px;">
-          <div v-for="invoice in InvoiceData">
-            {{invoice}}
-          </div>
-        </div> -->
+        
 
 
       </div>
@@ -101,7 +97,7 @@
         InvoiceModal: 'getInvoiceModal',
         ModalActive: 'getModalActive',
         InvoicesLoaded: 'getInvoicesLoaded',
-        InvoiceData: 'getInvoiceData',
+        
       })
 
     }

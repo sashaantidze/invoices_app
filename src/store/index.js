@@ -3,10 +3,11 @@ import axios from 'axios'
 
 export default createStore({
   state: {
-    InvoiceData: [],
+    InvoiceData: {},
     InvoiceModal: null,
     ModalActive: null,
     InvoicesLoaded: null,
+    currentInvoicArray: null
   },
 
   mutations: {
@@ -19,11 +20,17 @@ export default createStore({
     },
 
     SET_INVOCIE_DATA(state, payload){
-      state.InvoiceData.push(payload);
+      state.InvoiceData = payload.data;
     },
 
     SET_INVOCIES_LOADED(state){
       state.InvoicesLoaded = true;
+    },
+
+    SET_CURRENT_INVOICE(state, payload){
+      state.currentInvoicArray = state.InvoiceData.filter(invoice => {
+        return invoice.uid == payload
+      });
     }
   },
 
@@ -47,6 +54,10 @@ export default createStore({
 
     getInvoiceData (state) {
       return state.InvoiceData;
+    },
+
+    getCurrentInvoice (state) {
+      return state.currentInvoicArray;
     }
 
   },
