@@ -8,16 +8,16 @@
             </div>
 
             <div class="right flex">
-                <span class="price">${{invoice.itemsTotal}}</span>
+                <span class="price">{{formattedTotal}}</span>
                 <div class="status-button flex"
                     :class="{
                         paid: invoice.invoice_paid,
                         draft: invoice.invoice_draft,
-                        pending: invoice.invoice_pending}">
+                        pending: !invoice.invoice_paid && !invoice.invoice_draft}">
 
                     <span v-if="invoice.invoice_paid">Paid</span>
                     <span v-if="invoice.invoice_draft">Draft</span>
-                    <span v-if="invoice.invoice_pending">Pending</span>
+                    <span v-if="!invoice.invoice_paid && !invoice.invoice_draft">Pending</span>
                     
                 </div>
 
@@ -40,6 +40,13 @@ export default {
         invoice: {
             required: true,
             type: Object
+        }
+    },
+
+
+    computed: {
+        formattedTotal(){
+            return new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'GEL' }).format(this.invoice.itemsTotal) 
         }
     }
 }

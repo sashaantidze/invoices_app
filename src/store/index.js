@@ -3,7 +3,7 @@ import axios from 'axios'
 
 export default createStore({
   state: {
-    InvoiceData: {},
+    InvoiceData: [],
     InvoiceModal: null,
     ModalActive: null,
     InvoicesLoaded: null,
@@ -21,6 +21,10 @@ export default createStore({
 
     SET_INVOCIE_DATA(state, payload){
       state.InvoiceData = payload.data;
+    },
+
+    PUSH_INVOICE_DATA(state, payload){
+      state.InvoiceData.unshift(payload)
     },
 
     SET_INVOCIES_LOADED(state){
@@ -57,7 +61,7 @@ export default createStore({
     },
 
     getCurrentInvoice (state) {
-      return state.currentInvoicArray;
+      return state.currentInvoicArray ? state.currentInvoicArray[0] : null;
     }
 
   },
@@ -66,7 +70,6 @@ export default createStore({
   actions: {
     async GET_INVOICES({commit, state}) {
       const invoices = await axios.get('/api/v1/invoices');
-      console.log(invoices.data);
       commit('SET_INVOCIE_DATA', invoices.data)
       commit('SET_INVOCIES_LOADED')
     }

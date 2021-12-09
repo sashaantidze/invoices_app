@@ -184,6 +184,7 @@ export default {
 		...mapMutations({
 			toggleInvoice: 'TOGGLE_INVOICE',
 			toggleModal: 'TOGGLE_MODAL',
+			pushNewInvoice: 'PUSH_INVOICE_DATA'
 		}),
 
 
@@ -292,6 +293,8 @@ export default {
 	        invoicePending: this.invoiceData.invoicePending,
 	        invoiceDraft: this.invoiceData.invoiceDraft,
 	        invoicePaid: null,
+				}).then((e) => {
+					this.pushNewInvoice(e.data)
 				})
 				this.loading = false;
 				this.toggleInvoice()
