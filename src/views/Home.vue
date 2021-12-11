@@ -4,7 +4,7 @@
 		<div class="header flex">
 			<div class="left flex flex-column">
 				<h1>Invoices</h1>
-				<span>There are 4 total invoices</span>
+				<span>There are <span style="font-size: 23px">{{Invoices.length}}</span> total invoices</span>
 			</div>
 
 			<div class="right flex">
