@@ -120,7 +120,7 @@
 					<button type="button" @click="closeInvoice" class="red">Cancel</button>
 				</div>
 				<div class="right flex">
-					<button v-if="!editInvoice" type="submit" @click="saveDraft" class="dark-purple">Save Draft</button>
+					<button v-if="!editInvoice" type="button" @click="saveDraft" class="dark-purple">Save Draft</button>
 					<button v-if="!editInvoice" type="submit" @click="publishInvoice" class="purple">Create Invoice</button>
 					<button v-if="editInvoice" type="submit" class="purple">Update Invoice</button>
 				</div>
@@ -260,6 +260,7 @@ export default {
 
 		saveDraft () {
 			this.invoiceDraft = true;
+			this.uploadInvoice();
 		},
 
 
@@ -302,7 +303,7 @@ export default {
 	        invoiceItemList: this.invoiceData.invoiceItemList,
 	        invoiceTotal: this.invoiceData.invoiceTotal,
 	        invoicePending: this.invoiceData.invoicePending,
-	        invoiceDraft: this.invoiceData.invoiceDraft,
+	        invoiceDraft: this.invoiceDraft,
 	        invoicePaid: null,
 				}).then((e) => {
 					this.pushNewInvoice(e.data)

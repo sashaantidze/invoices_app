@@ -12,11 +12,11 @@
     			<div class="status-button flex"
                     :class="{
                         paid: currentInvoice.invoice_paid,
-                        draft: currentInvoice.invoice_draft,
+                        draft: currentInvoice.invoice_draft && !currentInvoice.invoice_paid,
                         pending: !currentInvoice.invoice_paid && !currentInvoice.invoice_draft}">
 
                     <span v-if="currentInvoice.invoice_paid">Paid</span>
-                    <span v-if="currentInvoice.invoice_draft">Draft</span>
+                    <span v-if="currentInvoice.invoice_draft && !currentInvoice.invoice_paid">Draft</span>
                     <span v-if="!currentInvoice.invoice_paid && !currentInvoice.invoice_draft">Pending</span>
                     
                 </div>
@@ -160,6 +160,7 @@ export default {
       try{
         await axios.post('api/v1/paid', {uid: this.currentInvoice.uid}).then((e) => {
           this.currentInvoice.invoice_paid = e.data.invoice_paid
+          this.currentInvoice.invoice_draft = e.data.invoice_draft
         })
       }
       catch(e){

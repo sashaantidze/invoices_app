@@ -9,13 +9,13 @@
 
 			<div class="right flex">
 				<div @click="toggleFilterMenu" class="filter flex">
-					<span>Filter by status</span>
+					<span>Filter by status: <span v-if="filteredBy">{{filteredBy}}</span></span>
 					<img src="@/assets/icon-arrow-down.svg" alt="">
 					<ul v-show="filterMenu" class="filter-menu">
-						<li>Draft</li>
-						<li>Pending</li>
-						<li>Paid</li>
-						<li>Clear Filter</li>
+						<li @click="filterInvoices">Draft</li>
+						<li @click="filterInvoices">Pending</li>
+						<li @click="filterInvoices">Paid</li>
+						<li @click="filterInvoices">Clear Filter</li>
 					</ul>
 				</div>
 				<div @click="newInvoice" class="button flex">
@@ -29,8 +29,8 @@
 
 		<!-- INVOICES -->
 
-		<div v-if="InvoiceData.length">
-			<Invoice v-for="(invoice, index) in InvoiceData" :invoice="invoice" :key="index" />
+		<div v-if="Invoices.length">
+			<Invoice v-for="(invoice, index) in Invoices" :invoice="invoice" :key="index" />
 		</div>
 		<div v-else class="empty flex flex-column">
 			<img src="@/assets/illustration-empty.svg" alt="">
@@ -54,7 +54,10 @@ export default {
 
 	data() {
 		return {
+			Invoices: [],
+
 			filterMenu:null,
+			filteredBy:null,
 		}
 	},
 
@@ -62,7 +65,11 @@ export default {
 	methods: {
 
 		...mapMutations({
-			toggleInvoice: 'TOGGLE_INVOICE'
+			toggleInvoice: 'TOGGLE_INVOICE',
+			filterByPending: 'FILTER_INVOICES_BY_PENDING',
+			clearFilter: 'CLEAR_INVOICE_FILTER',
+			filterByPaid: 'FILTER_INVOICES_BY_PAID',
+			filterByDraft: 'FILTER_INVOICES_BY_DRAFT',
 		}),
 
 		newInvoice () {
@@ -71,6 +78,35 @@ export default {
 
 		toggleFilterMenu() {
 			this.filterMenu = !this.filterMenu;
+		},
+
+		setFilteredInvoices(){
+			this.Invoices = this.filteredInvoices
+		},
+
+
+		filterInvoices(e){
+			this.filteredBy = e.target.innerHTML
+			switch(this.filteredBy){
+				case 'Pending':
+					this.filterByPending()
+					this.setFilteredInvoices()
+					break
+
+				case 'Paid':
+					this.filterByPaid()
+					this.setFilteredInvoices()
+					break
+
+				case 'Draft':
+					this.filterByDraft()
+					this.setFilteredInvoices()
+					break
+
+				default :
+					this.Invoices = this.InvoiceData
+			}
+			
 		}
 	},
 
@@ -78,7 +114,13 @@ export default {
 	computed: {
 		...mapGetters({
 			InvoiceData: 'getInvoiceData',
+			filteredInvoices: 'getFilteredInvoices'
 		}),
+	},
+
+
+	created(){
+		this.Invoices = this.InvoiceData
 	}
 
 }

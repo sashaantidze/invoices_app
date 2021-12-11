@@ -9,6 +9,7 @@ export default createStore({
     InvoicesLoaded: null,
     currentInvoicArray: null,
     editInvoice: null,
+    filteredInvoiceData: []
   },
 
   mutations: {
@@ -46,7 +47,28 @@ export default createStore({
       state.InvoiceData = state.InvoiceData.filter((invoice) => {
         return invoice.uid !== payload
       })
-    }
+    },
+
+    /*Filtering Mutations*/
+
+    FILTER_INVOICES_BY_PENDING(state){
+      state.filteredInvoiceData = state.InvoiceData.filter((invoice) => {
+        return invoice.invoice_paid === null && invoice.invoice_draft === null
+      })
+    },
+
+    FILTER_INVOICES_BY_PAID(state){
+      state.filteredInvoiceData = state.InvoiceData.filter((invoice) => {
+        return invoice.invoice_paid !== null
+      })
+    },
+
+    FILTER_INVOICES_BY_DRAFT(state){
+      state.filteredInvoiceData = state.InvoiceData.filter((invoice) => {
+        return invoice.invoice_draft !== null && invoice.invoice_paid === null
+      })
+    },
+
   },
 
 
@@ -77,6 +99,10 @@ export default createStore({
 
     getEdittable (state){
       return state.editInvoice;
+    },
+
+    getFilteredInvoices(state){
+      return state.filteredInvoiceData;
     }
 
   },
