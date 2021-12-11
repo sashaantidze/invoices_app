@@ -105,6 +105,7 @@ export default {
 
 				default :
 					this.Invoices = this.InvoiceData
+					this.filteredBy = null
 			}
 			
 		}
