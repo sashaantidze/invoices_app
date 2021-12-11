@@ -7,7 +7,8 @@ export default createStore({
     InvoiceModal: null,
     ModalActive: null,
     InvoicesLoaded: null,
-    currentInvoicArray: null
+    currentInvoicArray: null,
+    editInvoice: null,
   },
 
   mutations: {
@@ -35,6 +36,16 @@ export default createStore({
       state.currentInvoicArray = state.InvoiceData.filter(invoice => {
         return invoice.uid == payload
       });
+    },
+
+    TOGGLE_EDIT_INVOICE(state){
+      state.editInvoice = !state.editInvoice;
+    },
+
+    REMOVE_INVOICE(state, payload){
+      state.InvoiceData = state.InvoiceData.filter((invoice) => {
+        return invoice.uid !== payload
+      })
     }
   },
 
@@ -62,6 +73,10 @@ export default createStore({
 
     getCurrentInvoice (state) {
       return state.currentInvoicArray ? state.currentInvoicArray[0] : null;
+    },
+
+    getEdittable (state){
+      return state.editInvoice;
     }
 
   },
@@ -72,7 +87,13 @@ export default createStore({
       const invoices = await axios.get('/api/v1/invoices');
       commit('SET_INVOCIE_DATA', invoices.data)
       commit('SET_INVOCIES_LOADED')
+    },
+
+    async DELETE_INVOICE({commit, state}, payload){
+      await axios.delete(`api/v1/invoice/${payload}`)
+      commit('REMOVE_INVOICE', payload)
     }
+
   },
   modules: {
   }

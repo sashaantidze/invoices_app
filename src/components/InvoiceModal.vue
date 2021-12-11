@@ -5,7 +5,8 @@
 
 			<Loading v-show="loading" />
 
-			<h1>New Invoice</h1>
+			<h1 v-if="!editInvoice">New Invoice</h1>
+			<h1 v-else>Edit Invoice <span v-if="invoiceToEdit"> - #{{invoiceToEdit.uid}}</span></h1>
 
 			<div class="bill-from flex flex-column">
 				<h4>Bill From</h4>
@@ -79,7 +80,7 @@
 				</div>
 				<div class="input flex flex-column">
 					<label for="paymentTerms">Payment Terms</label>
-					<select required type="text" id="paymentTerms" v-model="paymentTerms">
+					<select :required="!editInvoice" id="paymentTerms" v-model="paymentTerms">
 						<option value="30">Net 30 Days</option>
 						<option value="60">Net 60 Days</option>
 					</select>
@@ -98,11 +99,11 @@
 							<th class="total">Total</th>
 						</tr>
 						<tr class="table-items flex" v-for="(item, index) in invoiceData.invoiceItemList" :key="index">
-							<td class="item-name"><input type="text" v-model="item.itemName" /></td>
+							<td class="item-name"><input type="text" v-model="item.name" /></td>
 							<td class="qty"><input type="number" v-model="item.qty" /></td>
 							<td class="price"><input type="number" v-model="item.price" /></td>
 							<td class="total flex">${{ (item.total = item.qty * item.price) }}</td>
-							<img class="item-delete-btn" @click="deleteInvoiceItem(item.id)" src="@/assets/icon-delete.svg" alt="" />
+							<img class="item-delete-btn" @click="deleteInvoiceItem(item.uid)" src="@/assets/icon-delete.svg" alt="" />
 						</tr>
 					</table>
 
@@ -121,7 +122,7 @@
 				<div class="right flex">
 					<button v-if="!editInvoice" type="submit" @click="saveDraft" class="dark-purple">Save Draft</button>
 					<button v-if="!editInvoice" type="submit" @click="publishInvoice" class="purple">Create Invoice</button>
-					<button v-if="editInvoice" type="button" class="purple">Update Invoice</button>
+					<button v-if="editInvoice" type="submit" class="purple">Update Invoice</button>
 				</div>
 			</div>
 
@@ -134,7 +135,7 @@
 <script>
 
 import {uid} from 'uid'
-import {mapMutations} from 'vuex'
+import {mapMutations, mapGetters, mapActions} from 'vuex'
 import axios from 'axios'
 import Loading from '@/components/Loading' 
 
@@ -157,7 +158,6 @@ export default {
 			invoiceTotal: 0,
 			invoiceDateUnix: null,
 
-			// Fillable invoice data. (invoiceDateUnix to be excluded as inserted on created hook) 
 			invoiceData: {
 				billerStreetAddress: null,
 				billerCity: null,
@@ -184,7 +184,10 @@ export default {
 		...mapMutations({
 			toggleInvoice: 'TOGGLE_INVOICE',
 			toggleModal: 'TOGGLE_MODAL',
-			pushNewInvoice: 'PUSH_INVOICE_DATA'
+			pushNewInvoice: 'PUSH_INVOICE_DATA',
+			toggleEditInvoice: 'TOGGLE_EDIT_INVOICE',
+			deleteInvoice: 'REMOVE_INVOICE',
+			setCurrentInvoice: 'SET_CURRENT_INVOICE'
 		}),
 
 
@@ -196,6 +199,10 @@ export default {
 				}
 				
 				this.toggleInvoice();
+
+				if(this.editInvoice){
+	        this.toggleEditInvoice()
+	      }
 				
 			}
 		},
@@ -208,6 +215,10 @@ export default {
 				}
 				
 				this.toggleInvoice();
+
+				if(this.editInvoice){
+	        this.toggleEditInvoice()
+	      }
 		},
 
 
@@ -231,16 +242,16 @@ export default {
 
 		addNewInvoiceItem() {
 			this.invoiceData.invoiceItemList.push({
-				id: uid(),
-				itemName: "",
+				uid: uid(),
+				name: "",
 				qty: "",
 				price: 0,
 				total: 0,
 			})
 		},
 
-		deleteInvoiceItem (id) {
-			this.invoiceData.invoiceItemList = this.invoiceData.invoiceItemList.filter((item) => item.id != id );
+		deleteInvoiceItem (uid) {
+			this.invoiceData.invoiceItemList = this.invoiceData.invoiceItemList.filter((item) => item.uid != uid );
 		},
 
 		publishInvoice () {
@@ -309,10 +320,77 @@ export default {
 			
 		},
 
+		async updateInvoice(){
+			if(this.invoiceData.invoiceItemList.length <= 0){
+				alert('Please make sure you add work items');
+				return;
+			}
+
+			this.loading = true;
+
+			this.calcInvoiceTotal()
+
+			try{
+				await axios.put(`/api/v1/invoice/${this.invoiceToEdit.uid}`, {
+					invoiceId: this.invoiceToEdit.uid,
+	        billerStreetAddress: this.invoiceData.billerStreetAddress,
+	        billerCity: this.invoiceData.billerCity,
+	        billerZipCode: this.invoiceData.billerZipCode,
+	        billerCountry: this.invoiceData.billerCountry,
+	        clientName: this.invoiceData.clientName,
+	        clientEmail: this.invoiceData.clientEmail,
+	        clientStreetAddress: this.invoiceData.clientStreetAddress,
+	        clientCity: this.invoiceData.clientCity,
+	        clientZipCode: this.invoiceData.clientZipCode,
+	        clientCountry: this.invoiceData.clientCountry,
+	        invoiceDate: this.invoiceDate,
+	        invoiceDateUnix: this.invoiceDateUnix,
+	        paymentTerms: this.invoiceData.paymentTerms,
+	        paymentDueDate: this.invoiceData.paymentDueDate,
+	        paymentDueDateUnix: this.invoiceData.paymentDueDateUnix,
+	        productDescription: this.invoiceData.productDescription,
+	        invoiceTotal: this.invoiceData.invoiceTotal,
+
+	        invoiceItemList: this.invoiceData.invoiceItemList,
+				}).then((e) => {
+					this.deleteInvoice(this.invoiceToEdit.uid)
+					this.pushNewInvoice(e.data)
+					this.setCurrentInvoice(e.data.uid)
+					this.toggleEditInvoice()
+
+					this.loading = false;
+					this.toggleInvoice()
+				})
+				
+			}
+			catch (e) {
+				if(e.response.status === 422){
+					this.loading = false;
+					this.errors = e.response.data.errors
+				}
+
+			}
+		},
+
+
+
 		submitForm () {
+			if(this.editInvoice){
+				this.updateInvoice()
+				return;
+			}
 			this.uploadInvoice();
 		},
 
+
+	},
+
+
+	computed: {
+		...mapGetters({
+			editInvoice: 'getEdittable',
+			invoiceToEdit: 'getCurrentInvoice'
+		})
 	},
 
 
@@ -331,8 +409,36 @@ export default {
 
 	created() {
 
-		this.invoiceDateUnix = Date.now();
-		this.invoiceDate = new Date(this.invoiceDateUnix).toLocaleDateString('en-us', this.dateOptions)
+		if(!this.editInvoice){
+			this.invoiceDateUnix = Date.now();
+			this.invoiceDate = new Date(this.invoiceDateUnix).toLocaleDateString('en-us', this.dateOptions)
+		}
+
+
+		if(this.editInvoice){
+			console.log(this.invoiceToEdit)
+
+			this.invoiceData.billerStreetAddress = this.invoiceToEdit.biller_data.street_address
+			this.invoiceData.billerCity = this.invoiceToEdit.biller_data.city
+			this.invoiceData.billerZipCode = this.invoiceToEdit.biller_data.zip_code
+			this.invoiceData.billerCountry = this.invoiceToEdit.biller_data.country
+
+			this.invoiceData.clientName = this.invoiceToEdit.client_data.name
+			this.invoiceData.clientEmail = this.invoiceToEdit.client_data.email
+			this.invoiceData.clientStreetAddress = this.invoiceToEdit.client_data.street_address
+			this.invoiceData.clientCity = this.invoiceToEdit.client_data.city
+			this.invoiceData.clientZipCode = this.invoiceToEdit.client_data.zip_code
+			this.invoiceData.clientCountry = this.invoiceToEdit.client_data.country
+
+			this.invoiceDate = this.invoiceToEdit.invoice_date
+			this.invoiceData.paymentDueDate = this.invoiceToEdit.invoice_payment_due
+
+			this.invoiceData.productDescription = this.invoiceToEdit.description
+
+
+			this.invoiceData.invoiceItemList = this.invoiceToEdit.items
+		}
+		
 
 	},
 

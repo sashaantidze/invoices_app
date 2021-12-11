@@ -13,7 +13,7 @@
 
 <script>
 
-import {mapMutations} from 'vuex'
+import {mapMutations, mapGetters} from 'vuex'
 
 export default {
 	
@@ -22,11 +22,16 @@ export default {
 		...mapMutations({
 			toggleInvoice: 'TOGGLE_INVOICE',
 			toggleModal: 'TOGGLE_MODAL',
+      toggleEditInvoice: 'TOGGLE_EDIT_INVOICE',
 		}),
 
 		closeInvoce(){
 			this.toggleInvoice();
 			this.toggleModal();
+
+      if(this.editInvoice){
+        this.toggleEditInvoice()
+      }
 		},
 
 
@@ -34,7 +39,14 @@ export default {
 			this.toggleModal();
 		}
 
-	}
+	},
+
+
+  computed: {
+    ...mapGetters({
+      editInvoice: 'getEdittable'
+    })
+  }
 }
 </script>
 

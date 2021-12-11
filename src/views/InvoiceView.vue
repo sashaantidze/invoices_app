@@ -24,10 +24,10 @@
         	</div>
 
         	<div class="right flex">
-        		<button @click="toggleEditInvoice(currentInvoice.uid)" class="dark-purple">Edit</button>
-        		<button @click="deleteInvoice(currentInvoice.uid)" class="red">Delete</button>
-        		<button @click="updateToPaid(currentInvoice.uid)" v-if="!currentInvoice.invoice_paid && !currentInvoice.invoice_draft" class="green">Mark as Paid</button>
-        		<button @click="updateToPending(currentInvoice.uid)" v-if="currentInvoice.invoice_draft || currentInvoice.invoice_paid" class="orange">Mark as Pending</button>
+        		<button @click="toggleEditInvoice" class="dark-purple">Edit</button>
+        		<button @click="deleteInvoice" class="red">Delete</button>
+        		<button @click="updateInvoiceStatus" v-if="!currentInvoice.invoice_paid && !currentInvoice.invoice_draft" class="green">Mark as Paid</button>
+        		<button @click="updateInvoiceStatus" v-if="currentInvoice.invoice_draft || currentInvoice.invoice_paid" class="orange">Mark as Pending</button>
         	</div>
         </div>
 
@@ -105,8 +105,9 @@
 </template>
 
 <script>
-import {mapMutations, mapGetters, mapState} from 'vuex'
-import InvoiceItem from '@/components/InvoiceItem' 
+import {mapMutations, mapGetters, mapActions} from 'vuex'
+import InvoiceItem from '@/components/InvoiceItem'
+import axios from 'axios'
 export default {
 	name: "InvoiceView",
 
@@ -123,7 +124,13 @@ export default {
 	methods: {
 		...mapMutations({
 			setCurrentInvoice: 'SET_CURRENT_INVOICE',
+      editInvoiceModal: 'TOGGLE_EDIT_INVOICE',
+      invoiceModal: 'TOGGLE_INVOICE',
 		}),
+
+    ...mapActions({
+      deleteInvoiceAction: 'DELETE_INVOICE'
+    }),
 
 		getInvoice(){
 			this.setCurrentInvoice(this.$route.params.invoiceId);
@@ -131,7 +138,39 @@ export default {
 
 		formatPriceAmount(price){
 			return new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'GEL' }).format(price)
-		}
+		},
+
+
+    toggleEditInvoice(){
+      this.editInvoiceModal()
+      this.invoiceModal()
+    },
+
+
+    deleteInvoice(){
+      let uid = this.currentInvoice.uid
+      if(!confirm('Sure to proceed deleting invoice: #'+uid+'?')) return;
+      this.deleteInvoiceAction(uid)
+      setTimeout(() => this.$router.push({ name: 'Home' }), 800)
+    },
+
+    async updateInvoiceStatus(){
+      if(!confirm('Update invoice status?')) return;
+
+      try{
+        await axios.post('api/v1/paid', {uid: this.currentInvoice.uid}).then((e) => {
+          this.currentInvoice.invoice_paid = e.data.invoice_paid
+        })
+      }
+      catch(e){
+        console.log(e.response)
+        if(e.response.status === 404){
+          alert(e.response.data.message)
+        }
+      }
+    },
+
+
 	},
 
 
