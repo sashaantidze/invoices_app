@@ -9,7 +9,7 @@
 
 			<div class="right flex">
 				<div @click="toggleFilterMenu" class="filter flex">
-					<span>Filter by status: <span v-if="filteredBy">{{filteredBy}}</span></span>
+					<span>Filter by status<span v-if="filteredBy">: {{filteredBy}}</span></span>
 					<img src="@/assets/icon-arrow-down.svg" alt="">
 					<ul v-show="filterMenu" class="filter-menu">
 						<li @click="filterInvoices">Draft</li>
