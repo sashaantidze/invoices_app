@@ -116,8 +116,11 @@ export default createStore({
     },
 
     async DELETE_INVOICE({commit, state}, payload){
-      await axios.delete(`api/v1/invoice/${payload}`)
-      commit('REMOVE_INVOICE', payload)
+      await axios.delete(`api/v1/invoice/${payload}`).then((e) => {
+        commit('REMOVE_INVOICE', payload)
+        commit('SET_CURRENT_INVOICE', null)
+      })
+      
     }
 
   },

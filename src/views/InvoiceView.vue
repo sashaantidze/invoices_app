@@ -150,8 +150,9 @@ export default {
     deleteInvoice(){
       let uid = this.currentInvoice.uid
       if(!confirm('Sure to proceed deleting invoice: #'+uid+'?')) return;
-      this.deleteInvoiceAction(uid)
-      setTimeout(() => this.$router.push({ name: 'Home' }), 800)
+      this.deleteInvoiceAction(uid).then(() => {
+        this.$router.push({ name: 'Home' })
+      })
     },
 
     async updateInvoiceStatus(){
